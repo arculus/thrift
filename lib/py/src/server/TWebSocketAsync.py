@@ -55,3 +55,6 @@ class ClientRegistry:
 
     def __iter__(self):
         return iter(self._clients.values())
+
+    def __getitem__(self, peer):
+        return self._clients[peer]
