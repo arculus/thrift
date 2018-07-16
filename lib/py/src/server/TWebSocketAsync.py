@@ -21,13 +21,16 @@ class WebSocketConnectionRunner:
             try:
                 iproto = await self.tprotocol.wait_for_message(TMessageType.CALL, TMessageType.ONEWAY)
 
+                # Mittels await wird hier der Kontrollfluss gestoppt, bis die Message verarbeitet wurde.
+                # Um Nachrichten paralleler empfangen zu können sollte man überlegen, hier das Bearbeiten mit
+                # asyncio.ensure_future() abzusetzen.
                 await self.processor.process(iproto, self.tprotocol)
 
             except asyncio.CancelledError:
                 break
             except Exception as x:
                 logging.exception(x)
-                break
+                continue
 
         self.ttransport.close()
 
