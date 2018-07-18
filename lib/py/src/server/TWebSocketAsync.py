@@ -61,3 +61,13 @@ class ClientRegistry:
 
     def __getitem__(self, peer):
         return self._clients[peer]
+
+    def __contains__(self, peer):
+        return peer in self._clients
+
+    @property
+    def peer_ids(self):
+        return list(self._clients.keys())
+
+    def __str__(self):
+        return str(self.peer_ids)
