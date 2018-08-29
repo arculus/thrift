@@ -92,7 +92,9 @@ class WSServerProtocol(WSProtocolBase, WebSocketServerProtocol):
     def onClose(self, wasClean, code, reason):
         assert self.client_registry
 
-        self._conn_runner.task.cancel()
-        self.client_registry.drop_connection(self._peer)
+        # onClose wird auch aufgerufen, wenn noch kein onOpen gelaufen war
+        if self._conn_runner:
+            self._conn_runner.task.cancel()
+            self.client_registry.drop_connection(self._peer)
 
         super().onClose(wasClean, code, reason)
