@@ -124,7 +124,7 @@ class TBufferedWebSocketClientTransport(TBufferedWebSocketTransportBase):
 
     CONNECT_TIMEOUT = 5
 
-    def __init__(self, ws_protocol, loop, hostname_port):
+    def __init__(self, ws_protocol, loop, hostname_port, ssl=None):
         super().__init__(ws_protocol)
 
         # die asyncio-loop
@@ -134,11 +134,12 @@ class TBufferedWebSocketClientTransport(TBufferedWebSocketTransportBase):
         self._t = None
 
         self._hostname_port = hostname_port
+        self._ssl = ssl
 
     async def open(self):
 
         async def connect():
-            (t, p) = await self._l.create_connection(lambda: self._p, self._hostname_port[0], self._hostname_port[1])
+            (t, p) = await self._l.create_connection(lambda: self._p, self._hostname_port[0], self._hostname_port[1], ssl=self._ssl)
             assert p is self._p
             self._t = t
 
