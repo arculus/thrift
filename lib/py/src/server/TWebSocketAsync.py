@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import time
 import asyncio
 import logging
 from thrift.Thrift import TMessageType
@@ -14,12 +15,17 @@ class WebSocketConnectionRunner:
         self.processor = processor
 
         self.task = None
+        
+        # just a timestamp for when we recieved the last message
+        self.last_message_recieved = 0
 
     async def run(self):
 
         while 1:
             try:
                 iproto = await self.tprotocol.wait_for_message(TMessageType.CALL, TMessageType.ONEWAY)
+                
+                self.last_message_recieved = time.time()
 
                 # Mittels await wird hier der Kontrollfluss gestoppt, bis die Message verarbeitet wurde.
                 # Um Nachrichten paralleler empfangen zu können sollte man überlegen, hier das Bearbeiten mit
