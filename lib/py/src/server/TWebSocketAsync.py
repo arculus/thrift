@@ -60,7 +60,8 @@ class ClientRegistry:
         self._clients[peer] = client
 
     def drop_connection(self, peer):
-        del self._clients[peer]
+        if peer in self._clients:
+            del self._clients[peer]
 
     def __iter__(self):
         return iter(self._clients.values())
