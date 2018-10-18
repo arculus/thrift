@@ -2,6 +2,7 @@
 import time
 import asyncio
 import logging
+import threading
 from thrift.Thrift import TMessageType
 
 from thrift.wsasync import on_task_done
@@ -52,16 +53,30 @@ class ClientRegistry:
 
     def __init__(self, ClientStub):
         self._ClientStub = ClientStub
+        
+        self._data_mutex = threading.RLock()
         self._clients = {}
+        self._ws_protos = {}
 
-    def new_connection(self, tprotocol, peer):
+    def new_connection(self, tprotocol, ws_proto):
         client = self._ClientStub(tprotocol)
-        client.peer = peer
-        self._clients[peer] = client
-
+        client.peer = ws_proto.peer
+        
+        with self._data_mutex:
+            self._clients[ws_proto.peer] = client
+            self._ws_protos[ws_proto.peer] = ws_proto
+        
+    def remove_connection(self, peer):
+        with self._data_mutex:
+            if peer in self._clients:
+                del self._clients[peer]
+                del self._ws_protos[peer]
+            
     def drop_connection(self, peer):
-        if peer in self._clients:
-            del self._clients[peer]
+        with self._data_mutex:
+            if peer in self._clients:
+                self._ws_protos[peer].sendClose()
+                self.remove_connection(peer)
 
     def __iter__(self):
         return iter(self._clients.values())
@@ -71,7 +86,7 @@ class ClientRegistry:
 
     def __contains__(self, peer):
         return peer in self._clients
-
+    
     @property
     def peer_ids(self):
         return list(self._clients.keys())
