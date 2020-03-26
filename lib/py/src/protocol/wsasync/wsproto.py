@@ -27,10 +27,6 @@ class WSProtocolBase:
 
     def set_on_message_callback(self, cb):
         self._on_message_callback = cb
-        
-    @property
-    def is_open(self):
-        return self._open_event.is_set()
 
     async def wait_for_opened(self):
         await asyncio.wait_for(self._open_event.wait(), self.OPEN_TIMEOUT)
